@@ -1,0 +1,6 @@
+openai-agents==0.2.9
+eval-type-backport==0.2.2
+websockets==15.0.1
+fastapi==0.120.2
+uvicorn==0.38.0
+python-dotenv==1.2.1

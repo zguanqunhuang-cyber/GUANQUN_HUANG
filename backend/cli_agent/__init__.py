@@ -1,1 +1,0 @@
-# CLI Agent module for Gemini CLI integration
