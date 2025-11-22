@@ -1,0 +1,72 @@
+{{- if .Values.openimMsgGateway.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: messagegateway-rpc-service
+  namespace: {{ include "openim.namespace" . }}
+  labels:
+    {{- include "openim.labels" . | nindent 4 }}
+    app: messagegateway-rpc-server
+spec:
+  type: {{ .Values.openimMsgGateway.service.type }}
+  selector:
+    app: messagegateway-rpc-server
+  ports:
+{{ toYaml .Values.openimMsgGateway.service.ports | indent 4 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messagegateway-rpc-server
+  namespace: {{ include "openim.namespace" . }}
+  labels:
+    {{- include "openim.labels" . | nindent 4 }}
+    app: messagegateway-rpc-server
+spec:
+  replicas: {{ .Values.openimMsgGateway.replicas }}
+  selector:
+    matchLabels:
+      app: messagegateway-rpc-server
+  template:
+    metadata:
+      labels:
+        {{- include "openim.labels" . | nindent 8 }}
+        app: messagegateway-rpc-server
+    spec:
+      automountServiceAccountToken: false
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+{{ include "openim.imagePullSecrets" . | indent 8 }}
+      {{- end }}
+      containers:
+        - name: openim-msggateway-container
+          image: {{ printf "%s:%s" .Values.openimMsgGateway.image (default .Chart.AppVersion .Values.openimMsgGateway.tag) }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.openimMsgGateway.pullPolicy }}
+          args:
+            - --config_folder_path=/config
+          env:
+            - name: CONFIG_PATH
+              value: "/config"
+            - name: DEPLOYMENT_TYPE
+              value: native
+            - name: IMENV_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redis.name }}
+                  key: redis-password
+          volumeMounts:
+            - name: openim-config
+              mountPath: "/config"
+              readOnly: true
+          ports:
+{{- range .Values.openimMsgGateway.service.ports }}
+            - containerPort: {{ .targetPort }}
+{{- end }}
+          {{- with .Values.openimMsgGateway.resources }}
+          resources: {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: openim-config
+          configMap:
+            name: {{ .Values.openimConfig.name }}
+{{- end }}

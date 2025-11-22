@@ -1,0 +1,376 @@
+global:
+  namespaceOverride: ""
+  imagePullSecrets: []
+  labels: {}
+  annotations: {}
+
+openimConfig:
+  name: openim-config
+  create: true
+
+configFiles:
+  discovery.yml: |
+    enable: "kubernetes"
+    kubernetes:
+      namespace: default
+    etcd:
+      rootDirectory: openim
+      address: [ localhost:12379 ]
+      username: ''
+      password: ''
+
+    rpcService:
+      user: user-rpc-service
+      friend: friend-rpc-service
+      msg: msg-rpc-service
+      push: push-rpc-service
+      messageGateway: messagegateway-rpc-service
+      group: group-rpc-service
+      auth: auth-rpc-service
+      conversation: conversation-rpc-service
+      third: third-rpc-service
+  log.yml: |
+    storageLocation: ./logs/
+    rotationTime: 24
+    remainRotationCount: 2
+    remainLogLevel: 6
+    isStdout: true
+    isJson: false
+    isSimplify: true
+  mongodb.yml: |
+    uri: ''
+    address: [ mongo-service:37017 ]
+    database: openim_v3
+    username: ''
+    password: ''
+    authSource: openim_v3
+    maxPoolSize: 100
+    maxRetry: 10
+  local-cache.yml: |
+    user:
+      topic: DELETE_CACHE_USER
+      slotNum: 100
+      slotSize: 2000
+      successExpire: 300
+      failedExpire: 5
+    group:
+      topic: DELETE_CACHE_GROUP
+      slotNum: 100
+      slotSize: 2000
+      successExpire: 300
+      failedExpire: 5
+    friend:
+      topic: DELETE_CACHE_FRIEND
+      slotNum: 100
+      slotSize: 2000
+      successExpire: 300
+      failedExpire: 5
+    conversation:
+      topic: DELETE_CACHE_CONVERSATION
+      slotNum: 100
+      slotSize: 2000
+      successExpire: 300
+      failedExpire: 5
+  openim-api.yml: |
+    api:
+      listenIP: 0.0.0.0
+      ports: [ 10002 ]
+      compressionLevel: 0
+    prometheus:
+      enable: true
+      ports: [ 12002 ]
+      grafanaURL: http://127.0.0.1:13000/
+  openim-rpc-user.yml: |
+    rpc:
+      registerIP:
+      listenIP: 0.0.0.0
+      autoSetPorts: false
+      ports: [ 10320 ]
+    prometheus:
+      enable: true
+      ports: [ 12320 ]
+  openim-crontask.yml: |
+    cronExecuteTime: 0 2 * * *
+    retainChatRecords: 365
+    fileExpireTime: 180
+    deleteObjectType: ["msg-picture","msg-file", "msg-voice","msg-video","msg-video-snapshot","sdklog"]
+  openim-msggateway.yml: |
+    rpc:
+      registerIP:
+      autoSetPorts: false
+      ports: [ 10140 ]
+    prometheus:
+      enable: true
+      ports: [ 12140 ]
+    listenIP: 0.0.0.0
+    longConnSvr:
+      ports: [ 10001 ]
+      websocketMaxConnNum: 100000
+      websocketMaxMsgLen: 4096
+      websocketTimeout: 10
+  openim-msgtransfer.yml: |
+    prometheus:
+      enable: true
+      ports: [ 12020 ]
+  openim-push.yml: |
+    rpc:
+      registerIP:
+      listenIP: 0.0.0.0
+      autoSetPorts: false
+      ports: [ 10170 ]
+    prometheus:
+      enable: true
+      ports: [ 12170 ]
+    maxConcurrentWorkers: 3
+    enable:
+    geTui:
+      pushUrl: https://restapi.getui.com/v2/$appId
+      masterSecret:
+      appKey:
+      intent:
+      channelID:
+      channelName:
+    fcm:
+      filePath:
+      authURL:
+    jpush:
+      pushUrl:
+      appKey:
+      masterSecret:
+  openim-rpc-msg.yml: |
+    rpc:
+      registerIP:
+      listenIP: 0.0.0.0
+      autoSetPorts: false
+      ports: [ 10130 ]
+    prometheus:
+      enable: true
+      ports: [ 12130 ]
+  openim-rpc-friend.yml: |
+    rpc:
+      registerIP:
+      listenIP: 0.0.0.0
+      autoSetPorts: false
+      ports: [ 10310 ]
+    prometheus:
+      enable: true
+      ports: [ 12310 ]
+  openim-rpc-group.yml: |
+    rpc:
+      registerIP:
+      listenIP: 0.0.0.0
+      autoSetPorts: false
+      ports: [ 10330 ]
+    prometheus:
+      enable: true
+      ports: [ 12330 ]
+  openim-rpc-conversation.yml: |
+    rpc:
+      registerIP:
+      listenIP: 0.0.0.0
+      autoSetPorts: false
+      ports: [ 10350 ]
+    prometheus:
+      enable: true
+      ports: [ 12350 ]
+  openim-rpc-third.yml: |
+    rpc:
+      registerIP:
+      listenIP: 0.0.0.0
+      autoSetPorts: false
+      ports: [ 10390 ]
+    prometheus:
+      enable: true
+      ports: [ 12390 ]
+  openim-rpc-auth.yml: |
+    rpc:
+      registerIP:
+      listenIP: 0.0.0.0
+      autoSetPorts: false
+      ports: [ 10360 ]
+    prometheus:
+      enable: true
+      ports: [ 12360 ]
+
+secrets:
+  redis:
+    name: openim-redis-secret
+    password: ""
+  mongo:
+    name: openim-mongo-secret
+    username: ""
+    password: ""
+  minio:
+    name: openim-minio-secret
+    accessKey: ""
+    secretKey: ""
+  kafka:
+    name: openim-kafka-secret
+    password: ""
+
+clusterRole:
+  enabled: true
+  serviceAccountName: default
+  rules:
+    - apiGroups: [""]
+      resources: ["pods", "services", "endpoints", "persistentvolumeclaims", "events", "configmaps", "secrets"]
+      verbs: ["*"]
+    - apiGroups: ["apps"]
+      resources: ["deployments", "daemonsets", "replicasets", "statefulsets"]
+      verbs: ["*"]
+    - apiGroups: ["monitoring.coreos.com"]
+      resources: ["servicemonitors"]
+      verbs: ["get", "create"]
+    - apiGroups: ["apps"]
+      resourceNames: ["prometheus"]
+      resources: ["deployments/finalizers"]
+      verbs: ["update"]
+    - apiGroups: [""]
+      resources: ["nodes"]
+      verbs: ["get"]
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  hosts:
+    - host: api.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          serviceName: openim-api
+          servicePort: 10002
+  tls: []
+
+openimApi:
+  enabled: true
+  replicas: 2
+  image: openim/openim-api
+  tag: v3.8.3
+  resources: {}
+  service:
+    type: ClusterIP
+    ports:
+      - name: http
+        protocol: TCP
+        port: 10002
+        targetPort: 10002
+      - name: metrics
+        protocol: TCP
+        port: 12002
+        targetPort: 12002
+
+openimCronTask:
+  enabled: true
+  image: openim/openim-crontask
+  tag: v3.8.3
+  replicas: 2
+  resources: {}
+
+openimMsgGateway:
+  enabled: true
+  replicas: 2
+  image: openim/openim-msggateway
+  tag: v3.8.3
+  service:
+    type: NodePort
+    ports:
+      - name: ws
+        protocol: TCP
+        port: 10001
+        targetPort: 10001
+      - name: rpc
+        protocol: TCP
+        port: 10140
+        targetPort: 10140
+      - name: metrics
+        protocol: TCP
+        port: 12140
+        targetPort: 12140
+  resources: {}
+
+openimMsgTransfer:
+  enabled: true
+  replicas: 2
+  image: openim/openim-msgtransfer
+  tag: v3.8.3
+  resources: {}
+
+openimPush:
+  enabled: true
+  replicas: 2
+  image: openim/openim-push
+  tag: v3.8.3
+  resources: {}
+
+rpcComponents:
+  user:
+    enabled: true
+    image: openim/openim-rpc-user
+    tag: v3.8.3
+    replicas: 2
+    deploymentName: user-rpc-server
+    serviceName: user-rpc-service
+    appLabel: user-rpc-server
+    port: 10320
+    metricsPort: 12320
+  friend:
+    enabled: true
+    image: openim/openim-rpc-friend
+    tag: v3.8.3
+    replicas: 2
+    deploymentName: friend-rpc-server
+    serviceName: friend-rpc-service
+    appLabel: friend-rpc-server
+    port: 10310
+    metricsPort: 12310
+  group:
+    enabled: true
+    image: openim/openim-rpc-group
+    tag: v3.8.3
+    replicas: 2
+    deploymentName: group-rpc-server
+    serviceName: group-rpc-service
+    appLabel: group-rpc-server
+    port: 10330
+    metricsPort: 12330
+  msg:
+    enabled: true
+    image: openim/openim-rpc-msg
+    tag: v3.8.3
+    replicas: 2
+    deploymentName: msg-rpc-server
+    serviceName: msg-rpc-service
+    appLabel: msg-rpc-server
+    port: 10130
+    metricsPort: 12130
+  third:
+    enabled: true
+    image: openim/openim-rpc-third
+    tag: v3.8.3
+    replicas: 1
+    deploymentName: third-rpc-server
+    serviceName: third-rpc-service
+    appLabel: third-rpc-server
+    port: 10390
+    metricsPort: 12390
+  auth:
+    enabled: true
+    image: openim/openim-rpc-auth
+    tag: v3.8.3
+    replicas: 1
+    deploymentName: auth-rpc-server
+    serviceName: auth-rpc-service
+    appLabel: auth-rpc-server
+    port: 10360
+    metricsPort: 12360
+  conversation:
+    enabled: true
+    image: openim/openim-rpc-conversation
+    tag: v3.8.3
+    replicas: 1
+    deploymentName: conversation-rpc-server
+    serviceName: conversation-rpc-service
+    appLabel: conversation-rpc-server
+    port: 10350
+    metricsPort: 12350

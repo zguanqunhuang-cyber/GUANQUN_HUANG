@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: debug-no-sa
+  namespace: openim
+spec:
+  automountServiceAccountToken: false
+  containers:
+    - name: dbg
+      image: busybox
+      command: ["sh", "-c", "ls -R /var/run/secrets && sleep 3600"]

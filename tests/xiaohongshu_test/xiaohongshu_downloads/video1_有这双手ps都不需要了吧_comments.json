@@ -1,0 +1,74 @@
+{
+  "video_id": "64952ac1000000001203ca5b",
+  "title": "有这双手，ps都不需要了吧！",
+  "author": "艺术情报站",
+  "publish_time": "2023-06-23",
+  "stats": {
+    "likes": "21万",
+    "comments": "718",
+    "favorites": "7万"
+  },
+  "description": "#一张照片高级感[话题]# #搞的就是艺术[话题]# #分享照片[话题]#\n#ps[话题]# #艺术[话题]# #有趣[话题]# #笔记灵感[话题]# #整活[话题]#",
+  "comments": [
+    {
+      "id": "649679a0000000002b0061a5",
+      "author": "再狂炫亿小口",
+      "content": "为了防止大家刷手机刷傻，每人说一个三个字母组成的单词[doge]",
+      "likes": "195",
+      "time": "2023-06-24",
+      "replies": [
+        {
+          "author": "艺术情报站",
+          "content": "fun[doge]",
+          "likes": "62",
+          "is_author": true
+        }
+      ]
+    },
+    {
+      "id": "64964c93000000001f033b6e",
+      "author": "棍母",
+      "content": "破坏照片原创违法，给他带进监狱[doge]",
+      "likes": "150",
+      "time": "2023-06-24",
+      "replies": [
+        {
+          "author": "艺术情报站",
+          "content": "[石化R]",
+          "likes": "42",
+          "is_author": true
+        }
+      ]
+    },
+    {
+      "id": "64b3eeef0000000017009477",
+      "author": "笑笑",
+      "content": "那不是刷牙，那是刷脸",
+      "likes": "58",
+      "time": "2023-07-16",
+      "replies": [
+        {
+          "author": "艺术情报站",
+          "content": "[笑哭R][笑哭R]",
+          "likes": "1",
+          "is_author": true
+        }
+      ]
+    },
+    {
+      "id": "64eadef4000000001c01674f",
+      "author": "ABB樱桃批发商",
+      "content": "确实很让人喜欢这种方式，但他是日本的[失望R]",
+      "likes": "17",
+      "time": "2023-08-27",
+      "replies": [
+        {
+          "author": "青子绿茶",
+          "content": "可是艺术不分国界",
+          "likes": "46"
+        }
+      ]
+    }
+  ],
+  "total_comments": "718条评论（已显示部分热门评论）"
+}

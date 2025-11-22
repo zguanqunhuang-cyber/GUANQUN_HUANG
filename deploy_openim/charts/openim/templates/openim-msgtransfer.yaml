@@ -1,0 +1,88 @@
+{{- if .Values.openimMsgTransfer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: openim-msgtransfer-service
+  namespace: {{ include "openim.namespace" . }}
+  labels:
+    {{- include "openim.labels" . | nindent 4 }}
+    app: openim-msgtransfer-server
+spec:
+  type: ClusterIP
+  selector:
+    app: openim-msgtransfer-server
+  ports:
+    - name: metrics-12020
+      protocol: TCP
+      port: 12020
+      targetPort: 12020
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openim-msgtransfer-server
+  namespace: {{ include "openim.namespace" . }}
+  labels:
+    {{- include "openim.labels" . | nindent 4 }}
+    app: openim-msgtransfer-server
+spec:
+  replicas: {{ .Values.openimMsgTransfer.replicas }}
+  selector:
+    matchLabels:
+      app: openim-msgtransfer-server
+  template:
+    metadata:
+      labels:
+        {{- include "openim.labels" . | nindent 8 }}
+        app: openim-msgtransfer-server
+    spec:
+      automountServiceAccountToken: false
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+{{ include "openim.imagePullSecrets" . | indent 8 }}
+      {{- end }}
+      containers:
+        - name: openim-msgtransfer-container
+          image: {{ printf "%s:%s" .Values.openimMsgTransfer.image (default .Chart.AppVersion .Values.openimMsgTransfer.tag) }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.openimMsgTransfer.pullPolicy }}
+          args:
+            - --config_folder_path=/config
+          env:
+            - name: CONFIG_PATH
+              value: "/config"
+            - name: DEPLOYMENT_TYPE
+              value: native
+            - name: IMENV_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redis.name }}
+                  key: redis-password
+            - name: IMENV_MONGODB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.mongo.name }}
+                  key: mongo_openim_username
+            - name: IMENV_MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.mongo.name }}
+                  key: mongo_openim_password
+            - name: IMENV_KAFKA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.kafka.name }}
+                  key: kafka-password
+          volumeMounts:
+            - name: openim-config
+              mountPath: "/config"
+              readOnly: true
+          ports:
+            - containerPort: 12020
+          {{- with .Values.openimMsgTransfer.resources }}
+          resources: {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: openim-config
+          configMap:
+            name: {{ .Values.openimConfig.name }}
+{{- end }}

@@ -1,0 +1,10 @@
+apiVersion: v2
+name: openim
+description: Helm chart for deploying OpenIM server components on Kubernetes.
+type: application
+version: 0.1.0
+appVersion: "3.8.3"
+home: https://docs.openim.io/guides/gettingStarted/k8s-deployment
+maintainers:
+  - name: OpenIM Community
+    url: https://github.com/OpenIMSDK

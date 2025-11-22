@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <clipPath id="yin">
+      <circle cx="50" cy="25" r="25"/>
+    </clipPath>
+    <clipPath id="yang">
+      <circle cx="50" cy="75" r="25"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="white" stroke="black" stroke-width="2"/>
+
+  <!-- Yin (black) half -->
+  <path d="M 50 2 A 48 48 0 0 1 50 98 A 24 24 0 0 1 50 50 A 24 24 0 0 0 50 2" fill="black"/>
+
+  <!-- Yang dot (white) -->
+  <circle cx="50" cy="25" r="8" fill="white"/>
+
+  <!-- Yin dot (black) -->
+  <circle cx="50" cy="75" r="8" fill="black"/>
+</svg>

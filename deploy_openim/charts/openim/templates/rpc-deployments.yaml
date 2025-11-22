@@ -1,0 +1,97 @@
+{{- $root := . -}}
+{{- range $name, $cfg := .Values.rpcComponents }}
+{{- if $cfg.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $cfg.serviceName }}
+  namespace: {{ include "openim.namespace" $root }}
+  labels:
+    {{- include "openim.labels" $root | nindent 4 }}
+    app: {{ $cfg.appLabel }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ $cfg.appLabel }}
+  ports:
+    - name: rpc-{{ $cfg.port }}
+      protocol: TCP
+      port: {{ $cfg.port }}
+      targetPort: {{ $cfg.port }}
+    - name: metrics-{{ $cfg.metricsPort }}
+      protocol: TCP
+      port: {{ $cfg.metricsPort }}
+      targetPort: {{ $cfg.metricsPort }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $cfg.deploymentName }}
+  namespace: {{ include "openim.namespace" $root }}
+  labels:
+    {{- include "openim.labels" $root | nindent 4 }}
+    app: {{ $cfg.appLabel }}
+spec:
+  replicas: {{ $cfg.replicas }}
+  selector:
+    matchLabels:
+      app: {{ $cfg.appLabel }}
+  template:
+    metadata:
+      labels:
+        {{- include "openim.labels" $root | nindent 8 }}
+        app: {{ $cfg.appLabel }}
+    spec:
+      automountServiceAccountToken: false
+      {{- with $root.Values.global.imagePullSecrets }}
+      imagePullSecrets:
+{{ include "openim.imagePullSecrets" $root | indent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ $cfg.deploymentName }}-container
+          image: {{ printf "%s:%s" $cfg.image (default $root.Chart.AppVersion $cfg.tag) }}
+          imagePullPolicy: {{ default "IfNotPresent" $cfg.imagePullPolicy }}
+          args:
+            - --config_folder_path=/config
+          env:
+            - name: CONFIG_PATH
+              value: "/config"
+            - name: DEPLOYMENT_TYPE
+              value: native
+            - name: IMENV_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $root.Values.secrets.redis.name }}
+                  key: redis-password
+            - name: IMENV_MONGODB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $root.Values.secrets.mongo.name }}
+                  key: mongo_openim_username
+            - name: IMENV_MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $root.Values.secrets.mongo.name }}
+                  key: mongo_openim_password
+            - name: IMENV_KAFKA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $root.Values.secrets.kafka.name }}
+                  key: kafka-password
+          volumeMounts:
+            - name: openim-config
+              mountPath: "/config"
+              readOnly: true
+          ports:
+            - containerPort: {{ $cfg.port }}
+            - containerPort: {{ $cfg.metricsPort }}
+          {{- with $cfg.resources }}
+          resources: {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: openim-config
+          configMap:
+            name: {{ $root.Values.openimConfig.name }}
+---
+{{- end }}
+{{- end }}

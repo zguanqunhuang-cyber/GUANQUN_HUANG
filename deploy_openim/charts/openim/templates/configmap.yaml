@@ -1,0 +1,14 @@
+{{- if .Values.openimConfig.create }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.openimConfig.name }}
+  namespace: {{ include "openim.namespace" . }}
+  labels:
+    {{- include "openim.labels" . | nindent 4 }}
+data:
+{{- range $name, $content := .Values.configFiles }}
+  {{ $name }}: |
+{{ $content | indent 4 }}
+{{- end }}
+{{- end }}

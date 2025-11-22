@@ -1,0 +1,65 @@
+global:
+  namespaceOverride: openim
+
+openimConfig:
+  name: openim-config
+  create: false
+
+secrets:
+  redis:
+    name: openim-redis-secret
+    password: OpenIMredis123!
+  mongo:
+    name: openim-mongo-secret
+    username: root
+    password: RootMongo123!
+  minio:
+    name: openim-minio-secret
+    accessKey: openimminio
+    secretKey: OpenIMminio123!
+  kafka:
+    name: openim-kafka-secret
+    password: ""
+
+openimApi:
+  replicas: 1
+  tag: v3.8.3-patch
+
+openimCronTask:
+  replicas: 1
+  tag: v3.8.3-patch
+
+openimMsgGateway:
+  replicas: 1
+  tag: v3.8.3-patch
+
+openimMsgTransfer:
+  replicas: 1
+  tag: v3.8.3-patch
+
+openimPush:
+  replicas: 1
+  tag: v3.8.3-patch
+
+rpcComponents:
+  user:
+    replicas: 1
+    tag: v3.8.3-patch
+  friend:
+    replicas: 1
+    tag: v3.8.3-patch
+  group:
+    replicas: 1
+    tag: v3.8.3-patch
+  msg:
+    replicas: 1
+    tag: v3.8.3-patch
+  third:
+    replicas: 1
+    tag: v3.8.3-patch
+  auth:
+    replicas: 1
+    tag: v3.8.3-patch
+  conversation:
+    replicas: 1
+    tag: v3.8.3-patch

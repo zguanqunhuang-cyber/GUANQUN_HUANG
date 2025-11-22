@@ -1,0 +1,83 @@
+{{- if .Values.openimPush.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: push-rpc-service
+  namespace: {{ include "openim.namespace" . }}
+  labels:
+    {{- include "openim.labels" . | nindent 4 }}
+    app: push-rpc-server
+spec:
+  type: ClusterIP
+  selector:
+    app: push-rpc-server
+  ports:
+    - name: rpc-10170
+      protocol: TCP
+      port: 10170
+      targetPort: 10170
+    - name: metrics-12170
+      protocol: TCP
+      port: 12170
+      targetPort: 12170
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: push-rpc-server
+  namespace: {{ include "openim.namespace" . }}
+  labels:
+    {{- include "openim.labels" . | nindent 4 }}
+    app: push-rpc-server
+spec:
+  replicas: {{ .Values.openimPush.replicas }}
+  selector:
+    matchLabels:
+      app: push-rpc-server
+  template:
+    metadata:
+      labels:
+        {{- include "openim.labels" . | nindent 8 }}
+        app: push-rpc-server
+    spec:
+      automountServiceAccountToken: false
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+{{ include "openim.imagePullSecrets" . | indent 8 }}
+      {{- end }}
+      containers:
+        - name: push-rpc-server-container
+          image: {{ printf "%s:%s" .Values.openimPush.image (default .Chart.AppVersion .Values.openimPush.tag) }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.openimPush.pullPolicy }}
+          args:
+            - --config_folder_path=/config
+          env:
+            - name: CONFIG_PATH
+              value: "/config"
+            - name: DEPLOYMENT_TYPE
+              value: native
+            - name: IMENV_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redis.name }}
+                  key: redis-password
+            - name: IMENV_KAFKA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.kafka.name }}
+                  key: kafka-password
+          volumeMounts:
+            - name: openim-config
+              mountPath: "/config"
+              readOnly: true
+          ports:
+            - containerPort: 10170
+            - containerPort: 12170
+          {{- with .Values.openimPush.resources }}
+          resources: {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: openim-config
+          configMap:
+            name: {{ .Values.openimConfig.name }}
+{{- end }}

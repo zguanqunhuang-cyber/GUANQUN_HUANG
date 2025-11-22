@@ -1,0 +1,82 @@
+{{- if .Values.openimApi.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: openim-api-service
+  namespace: {{ include "openim.namespace" . }}
+  labels:
+    {{- include "openim.labels" . | nindent 4 }}
+    app: openim-api
+spec:
+  type: {{ .Values.openimApi.service.type }}
+  selector:
+    app: openim-api
+  ports:
+{{ toYaml .Values.openimApi.service.ports | indent 4 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openim-api
+  namespace: {{ include "openim.namespace" . }}
+  labels:
+    {{- include "openim.labels" . | nindent 4 }}
+    app: openim-api
+spec:
+  replicas: {{ .Values.openimApi.replicas }}
+  selector:
+    matchLabels:
+      app: openim-api
+  template:
+    metadata:
+      labels:
+        {{- include "openim.labels" . | nindent 8 }}
+        app: openim-api
+    spec:
+      automountServiceAccountToken: false
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+{{ include "openim.imagePullSecrets" . | indent 8 }}
+      {{- end }}
+      containers:
+        - name: openim-api-container
+          image: {{ printf "%s:%s" .Values.openimApi.image (default .Chart.AppVersion .Values.openimApi.tag) }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.openimApi.pullPolicy }}
+          args:
+            - --config_folder_path=/config
+          env:
+            - name: CONFIG_PATH
+              value: "/config"
+            - name: DEPLOYMENT_TYPE
+              value: native
+            - name: IMENV_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redis.name }}
+                  key: redis-password
+            - name: IMENV_MONGODB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.mongo.name }}
+                  key: mongo_openim_username
+            - name: IMENV_MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.mongo.name }}
+                  key: mongo_openim_password
+          volumeMounts:
+            - name: openim-config
+              mountPath: "/config"
+              readOnly: true
+          ports:
+{{- range .Values.openimApi.service.ports }}
+            - containerPort: {{ .targetPort }}
+{{- end }}
+          {{- with .Values.openimApi.resources }}
+          resources: {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: openim-config
+          configMap:
+            name: {{ .Values.openimConfig.name }}
+{{- end }}

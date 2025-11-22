@@ -1,0 +1,48 @@
+{{- if .Values.openimCronTask.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openim-crontask
+  namespace: {{ include "openim.namespace" . }}
+  labels:
+    {{- include "openim.labels" . | nindent 4 }}
+    app: crontask
+spec:
+  replicas: {{ .Values.openimCronTask.replicas }}
+  selector:
+    matchLabels:
+      app: crontask
+  template:
+    metadata:
+      labels:
+        {{- include "openim.labels" . | nindent 8 }}
+        app: crontask
+    spec:
+      automountServiceAccountToken: false
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+{{ include "openim.imagePullSecrets" . | indent 8 }}
+      {{- end }}
+      containers:
+        - name: crontask-container
+          image: {{ printf "%s:%s" .Values.openimCronTask.image (default .Chart.AppVersion .Values.openimCronTask.tag) }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.openimCronTask.pullPolicy }}
+          args:
+            - --config_folder_path=/config
+          env:
+            - name: CONFIG_PATH
+              value: "/config"
+            - name: DEPLOYMENT_TYPE
+              value: native
+          volumeMounts:
+            - name: openim-config
+              mountPath: "/config"
+              readOnly: true
+          {{- with .Values.openimCronTask.resources }}
+          resources: {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: openim-config
+          configMap:
+            name: {{ .Values.openimConfig.name }}
+{{- end }}
